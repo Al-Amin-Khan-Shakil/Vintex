@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ventix
+      POSTGRES_PASSWORD: ventix_dev_password
+      POSTGRES_DB: ventix_development
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: bash -c "rm -f tmp/pids/server.pid && bin/rails server -b 0.0.0.0"
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://ventix:ventix_dev_password@db:5432/ventix_development
+      RAILS_ENV: development
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+
+volumes:
+  db_data:
+  bundle_cache:
